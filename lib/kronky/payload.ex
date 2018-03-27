@@ -260,11 +260,15 @@ defmodule Kronky.Payload do
     message |> error_payload
   end
 
-  def convert_to_payload({:error, message}) when is_binary(message) do
+  def convert_to_payload({:error, message}) when is_binary(message) or is_atom(message) do
     message |> generic_validation_message() |> error_payload
   end
 
   def convert_to_payload({:error, list}) when is_list(list), do: error_payload(list)
+
+  def convert_to_payload({:error, %Ecto.Changeset{} = changeset}) do
+    convert_to_payload(changeset)
+  end
 
   def convert_to_payload(%Ecto.Changeset{valid?: false} = changeset) do
     changeset |> extract_messages() |> error_payload
@@ -334,7 +338,7 @@ defmodule Kronky.Payload do
     convert_field_name(message)
   end
 
-  defp prepare_message(message) when is_binary(message) do
+  defp prepare_message(message) when is_binary(message) or is_atom(message) do
     generic_validation_message(message)
   end
 
